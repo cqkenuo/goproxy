@@ -1,6 +1,6 @@
 ## GOPROXY简介
 <img src="/doc/images/logo.jpg" width="200" height="auto"/>  
-一款轻量级、功能强大、高性能的http代理、https代理、socks5代理、内网穿透代理服务器、ss代理、游戏盾、游戏代理，支持API代理认证。websocke代理、tcp代理、udp代理、socket代理、高防服务器。支持正向代理、反向代理、透明代理、TCP内网穿透、UDP内网穿透、HTTP内网穿透、HTTPS内网穿透、https代理负载均衡、http代理负载均衡、socks5代理负载均衡、socket代理负载均衡、ss代理负载均衡、TCP/UDP端口映射、SSH中转、TLS加密传输、协议转换、防污染DNS代理，限速，限连接数。官方QQ交流群: 793015219。 
+一款轻量级、功能强大、高性能的http代理、https代理、socks5代理、内网穿透代理服务器、ss代理、游戏盾、游戏代理，支持API代理认证。websocke代理、tcp代理、udp代理、socket代理、高防服务器。支持正向代理、反向代理、透明代理、TCP内网穿透、UDP内网穿透、HTTP内网穿透、HTTPS内网穿透、https代理负载均衡、http代理负载均衡、socks5代理负载均衡、socket代理负载均衡、ss代理负载均衡、TCP/UDP端口映射、SSH中转、TLS加密传输、协议转换、防污染DNS代理，限速，限连接数。官方QQ交流群: 189618940。 
 
 ---
 
@@ -17,7 +17,7 @@
 - [SDK](https://github.com/snail007/goproxy-sdk)
 - [GORPOXY帮助手册](https://snail007.github.io/goproxy/manual/zh/) 
 - [GORPOXY实战教程](https://snail007.github.io/goproxy)  
-- [免费版VS商业版(安装、激活)](https://snail007.github.io/goproxy/free_vs_commercial/)
+- [免费版VS商业版(安装、激活)](https://snail007.github.io/goproxy/page/free_vs_commercial/)
 
 ## ProxyAdmin介绍预览（这不是goproxy，是控制面板友情链接；安装使用goproxy请往下看，谢谢！）
 `ProxyAdmin` 是强大的代理服务工具 snail007/goproxy 的控制面板，运行了它，一秒让你的服务器变为强大的代理服务器，友好的交互界面，小白也能轻松上手，让你用起来得心应手，心情舒畅。
@@ -146,7 +146,7 @@ chmod +x install_commercial.sh
 Proxy is licensed under GPLv3 license。  
 
 ## Contact  
-官方QQ交流群: 793015219  
+官方QQ交流群: 189618940  
 
 ## Donation  
 如果proxy帮助你解决了很多问题，你可以通过下面的捐赠更好的支持proxy。  
@@ -768,7 +768,18 @@ port:代理的端口
 比如限制每个tcp连接速率为100k/s：  
 `proxy tcp -p ":33080" -T tcp -P "192.168.22.33:22" --rate-limit 100k`   
 
-### 2.9 查看帮助  
+### 2.9 压缩传输
+
+`--c`控制本地和客户端之间是否压缩传输，默认false；`--C`控制本地和上级之间是否压缩传输，默认false。  
+
+示例：
+
+VPS(IP:22.22.22.33)执行:  
+`proxy tcp -t tcp --c -p ":33080" -T tcp -P "127.0.0.1:8080"`  
+本地执行:  
+`proxy tcp -t tcp -p ":23080" -T tcp -P "22.22.22.33:33080" --C`  
+
+### 2.10 查看帮助  
 `proxy help tcp`  
 
 ## 3.UDP代理  
@@ -1135,11 +1146,15 @@ SOCKS5代理，支持CONNECT，UDP协议，不支持BIND，支持用户名密码
 KCP协议需要--kcp-key参数设置一个密码用于加密解密数据  
 
 一级HTTP代理(VPS，IP:22.22.22.22)  
-`proxy socks -t kcp -p ":38080" --kcp-key mypassword`  
+`proxy socks -t kcp -p ":38080" --kcp-key mypassword -g 22.22.22.22`  
 
 二级HTTP代理(本地Linux)  
 `proxy socks -t tcp -p ":8080" -T kcp -P "22.22.22.22:38080" --kcp-key mypassword`  
 那么访问本地的8080端口就是访问VPS上面的代理端口38080，数据通过kcp协议传输。  
+
+提示:
+
+当本地使用kcp协议时,需要用-g指定vps公网IP,socks5的UDP功能才能正常使用.这时-g是返回给客户端的UDP地址中的IP地址.
 
 ### 5.9.自定义DNS  
 --dns-address和--dns-ttl参数，用于自己指定proxy访问域名的时候使用的dns（--dns-address）  
@@ -1274,7 +1289,7 @@ SOCKS5支持级联认证，-A可以设置上级认证信息。
 ## 6.SPS协议转换  
 
 ### 6.1 功能介绍  
-代理协议转换使用的是sps子命令，sps本身不提供代理功能，只是接受代理请求"转换并转发"给已经存在的http(s)代理或者socks5代理或者ss代理；sps可以把已经存在的http(s)代理或者socks5代理或ss代理转换为一个端口同时支持http(s)和socks5和ss的代理，而且http(s)代理支持正向代理和反向代理(SNI)，转换后的SOCKS5代理，当上级是SOCKS5或者SS时仍然支持UDP功能；另外对于已经存在的http(s)代理或者socks5代理，支持tls、tcp、kcp三种模式，支持链式连接，也就是可以多个sps结点层级连接构建加密通道。  
+代理协议转换使用的是sps子命令，sps可以把已经存在的http(s)代理或者socks5代理或ss代理转换为一个端口同时支持http(s)和socks5和ss的代理，而且http(s)代理支持正向代理和反向代理(SNI)，转换后的SOCKS5代理，当上级是SOCKS5或者SS时仍然支持UDP功能；另外对于已经存在的http(s)代理或者socks5代理，支持tls、tcp、kcp三种模式，支持链式连接，也就是可以多个sps结点层级连接构建加密通道。  
 
 `ss`功能支持的加密方法为:aes-128-cfb ， aes-128-ctr ， aes-128-gcm ， aes-192-cfb ， aes-192-ctr ， aes-192-gcm ， aes-256-cfb ， aes-256-ctr ， aes-256-gcm ， bf-cfb ， cast5-cfb ， chacha20 ， chacha20-ietf ， chacha20-ietf-poly1305 ， des-cfb ， rc4-md5 ， rc4-md5-6 ， salsa20 ， xchacha20  
 
@@ -1285,6 +1300,10 @@ SOCKS5支持级联认证，-A可以设置上级认证信息。
   -p ":8081,:8082"  监听8081和8082
   -p ":8081,:8082,:9000-9999" 监听8081和8082以及9000,9001至9999，共1002个端口
 ```
+
+提示:
+
+当本地使用kcp协议时,需要用-g指定vps公网IP,socks5的UDP功能才能正常使用.这时-g是返回给客户端的UDP地址中的IP地址.
 
 ### 6.2 HTTP(S)转HTTP(S)+SOCKS5+SS  
 假设已经存在一个普通的http(s)代理：127.0.0.1:8080，现在我们把它转为同时支持http(s)和socks5和ss的普通代理，转换后的本地端口为18080，ss加密方式:aes-192-cfb，ss密码:pass。  
@@ -1789,11 +1808,11 @@ iprate：用户IP的单个TCP连接速率限制，单位：字节/秒，不限�
 upstream：使用的上级，没有为空，或者不设置这个头部。  
 
 #### 提示  
-1.默认情况下，设置了`--auth-url`是需要客户端提供用户名和密码的；如果不需要客户端提供用户名密码，并认证，可以加上`--auth-nouser`，每次访问仍然会访问认证地址`--auth-url`进行认证。只是php接口里面接收的$user认证用户名和$pass认证密码都为空。  
+1.默认情况下，设置了`--auth-url`是强制要求客户端提供用户名和密码的；如果不需要强制要求客户端提供用户名密码，并认证，可以加上`--auth-nouser`，每次访问仍然会访问认证地址`--auth-url`进行认证，当客户端没有发生认证信息当时候，php接口里面接收的$user认证用户名和$pass认证密码都为空。  
 2.连接数限制优先级：用户认证文件速率限制-》文件ip.limit速率限制-》API用户速率限制-》API的IP速率限制-》命令行全局连接数限制。  
 3.速率限制优先级：用户认证文件速率限制-》文件ip.limit速率限制-》API用户速率限制-》API的IP速率限制-》命令行全局速率限制。  
 3.上级获取优先级：用户认证文件的upstream-》文件ip.limit的upstream-》API的upstream-》命令行指定的上级。  
-4.`--auth-cache`认证缓存，对认证结果缓存一定时间，提升性能，降低认证接口压力，--auth-cache 单位秒，默认60, 设置0是关闭缓存。  
+4.`--auth-cache`认证缓存，对认证结果缓存一定时间，提升性能，降低认证接口压力，--auth-cache 单位秒，默认0, 设置0是关闭缓存。  
 
 #### upstream详细说明  
 
@@ -1820,12 +1839,17 @@ upstream支持socks5、http(s)代理，支持认证，格式：`protocol://a:b@2
 
 ### 流量上报/流量统计/流量限制
 
-proxy的http(s)/socks5/sps/tcp/udp代理功能支持流量上报,可以通过参数--traffic-url设置一个http接口地址,
-那么当连接释放时,proxy会把此次连接使用的流量上报到这个地址,具体情况是,proxy发送一个HTTP到GET请求到--traffic-url设置的HTTP URL地址.  
+proxy的http(s)/socks5/sps/tcp/udp代理功能支持流量上报,可以通过参数`--traffic-url`设置一个http接口地址。  
+proxy会把连接使用的流量上报到这个地址,具体情况是,proxy发送一个HTTP到GET请求到`--traffic-url`设置的HTTP URL地址.  
+上报模式有两种，可以通过`--traffic-mode`参数指定，可以是`normal`普通模式上报，也可以是`fast`快速模式上报。  
+1. `normal`普通模式上报  
+当连接释放时,proxy会把此次连接使用的流量上报到这个`--traffic-url`地址.  
+2. `fast`快速模式上报  
+对已经建立的每个连接，proxy会`定时`把这个连接产生的流量上报到这个这个`--traffic-url`地址.    
+`定时`默认是5秒，可以通过参数`--traffic-interval`修改`定时`为合适的秒数。   
+流量上报功能结合上面的API认证功能可以实现实时控制用户的流量使用,流量统计,流量限制;流量上报到接口,接口把流量数据写入数据库,然后认证API查询数据库判断用户或者IP流量使用情况,用来确定用户是否可以认证成功.  
 
-流量上报功能结合上面的API认证功能可以实现实时控制用户的流量使用,流量统计,流量限制;流量上报到接口,接口把流量数据写入数据库,然后认证API查询数据库判断用户或者IP流量使用情况,用来确定用户是否可以认证成功.
-
-下面是一个完整的URL请求实例:  
+下面是一个完整的URL请求实例:   
 
 `http://127.0.0.1:33088/user/traffic?bytes=337&client_addr=127.0.0.1%3A51035&id=http&server_addr=127.0.0.1%3A33088&target_addr=myip.ipip.net%3A80&username=a`  
 
@@ -1836,6 +1860,56 @@ client_addr: 客户端地址,格式: `IP:端口`.
 target_addr: 目标地址,格式: `IP:端口`,tcp/udp代理时,这个是空.  
 username: 代理认证用户名,tcp/udp代理时,这个是空.  
 bytes: 此次使用的流量字节数.  
+
+### 主动断开用户连接
+
+proxy的http(s)/socks5/sps代理功能支持`控制接口`,可以通过参数`--control-url`指定的http接口地址,
+那么proxy就会`定期`的把当前连接到proxy的全部用户名或客户端IP发送到此URL，具体情况是,proxy发送一个HTTP到POST请求到`--control-url`设置的HTTP URL地址.  
+`定期`默认是30秒，可以通过`--control-sleep`参数修改此值。
+当用户过期，或者用户流量已经用完，通过认证API只能控制用户不能新建连接，但是已经和proxy建立当连接没法立刻断开，
+那么通过控制接口可以解决这个问题，控制接口会在最慢`定期`时间内通过控制接口返回当内容，结束已经无效当用户建立当连接。
+
+#### 控制接口请求说明
+
+proxy会向控制接口URL发送一个HTTP POST请求，表单数据中有两个字段：user和ip。
+
+user：当前连接到proxy的用户名，多个使用英文逗号分割，比如：user1,user2
+
+ip：当前连接到proxy的客户端ip地址，多个使用英文逗号分割，比如：1.1.1.1,2.2.2.2
+
+#### 控制接口返回数据说明
+
+控制接口返回的数据是无效的用户和IP，格式是一个json对象数据，有两个字段user和ip。
+
+比如：{"user":"a,b","ip":""}
+
+user：当前连接到proxy的用户名，多个使用英文逗号分割，没有留空，比如：user1,user2
+
+ip：当前连接到proxy的客户端ip地址，多个使用英文逗号分割，没有留空，比如：1.1.1.1,2.2.2.2
+
+返回的用户和ip已经建立的连接会被proxy断开。
+
+#### 示例  
+假设--control-url `http://127.0.0.1:33088/user/control.php`  指向了一个php接口地址.  
+control.php内容如下：  
+
+```php  
+<?php  
+#接收proxy post过来的数据
+$userArr=explode(",",$_POST['user']);   
+$ipArr=$_GET['ip'];  
+
+//无效用户列表
+$badUsers=[]; 
+
+foreach ($userArr as $user) {  
+    //逻辑判断用户$user是否无效,如果无效就放入$badUsers
+    $badUsers[]=$user;
+}  
+$data=["user"=>implode(","$badUsers),"ip"=>""];
+
+echo json_encode($data);
+```  
 
 ## 10.本地认证，限速，控制连接数  
 

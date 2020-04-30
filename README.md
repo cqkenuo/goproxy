@@ -18,7 +18,7 @@ The GoProxy is a high-performance http proxy, https proxy, socks5 proxy, ss prox
 - [SDK](https://github.com/snail007/goproxy-sdk)
 - [GORPOXY Manual](https://snail007.github.io/goproxy/manual/)
 - [GORPOXY Tutorial](https://snail007.github.io/goproxy)
-- [Free version VS commercial version](https://snail007.github.io/goproxy/free_vs_commercial/)
+- [Free version VS commercial version](https://snail007.github.io/goproxy/page/free_vs_commercial/)
 
 ### ProxyAdmin Demo
 And ProxyAdmin is a powerful web console of snail007/goproxy .
@@ -120,9 +120,9 @@ wget https://github.com/snail007/goproxy/releases/download/v7.9/proxy-linux-amd6
 The free version performs this:
 
 ```shell
-c d /root/proxy/
+cd /root/proxy/
 wget https://raw.githubusercontent.com/snail007/goproxy/master/install.sh
-Chmod +x install.sh
+chmod +x install.sh
 ./install.sh
 ```
 
@@ -131,7 +131,7 @@ The commercial version performs this:
 ```shell
 cd /root/proxy/
 wget https://raw.githubusercontent.com/snail007/goproxy/master/install_commercial.sh
-Chmod +x install_commercial.sh
+chmod +x install_commercial.sh
 ./install_commercial.sh
 ```
 
@@ -144,7 +144,7 @@ Chmod +x install_commercial.sh
 Proxy is licensed under GPLv3 license.
 
 ## Contact
-Official QQ exchange group: 793015219
+Official QQ exchange group: 189618940
 
 ## Donation
 If the proxy helps you solve a lot of problems, you can better support the proxy through the donation below.
@@ -776,7 +776,18 @@ The parameter `--rate-limit` can limit the rate of each tcp connection.
 For example, limit the connection rate of each tcp to 100k/s:  
 `proxy tcp -p ":33080" -T tcp -P "192.168.22.33:22" --rate-limit 100k`  
 
-### 2.9 View Help
+### 2.9 Compressed transmission
+
+`--c` controls whether to compress transmission between local and client, default false;` --C` controls whether to compress transmission between local and upstream, default false.
+
+Examples:
+
+VPS (IP: 22.22.22.33) implementation:
+`proxy tcp -t tcp --c -p": 33080 "-T tcp -P" 127.0.0.1:8080 "`
+Local execution:
+`proxy tcp -t tcp -p": 23080 "-T tcp -P" 22.22.22.33:33080 "--C`
+
+### 2.10 View Help
 `proxy help tcp`  
 
 ## 3.UDP Proxies  
@@ -1161,6 +1172,10 @@ Secondary HTTP proxy (local Linux)
 `proxy socks -t tcp -p ":8080" -T kcp -P "22.22.22.22:38080" --kcp-key mypassword`  
 Then access the local port 8080 is to access the proxy port 38080 on the VPS, the data is transmitted through the kcp protocol.  
 
+notice:
+
+When using the kcp protocol locally, you need to specify the vps public network IP with -g, and the UDP function of socks5 is fully used. At this time, -g is the IP address in the UDP address returned to the client.
+
 ### 5.9. Custom DNS  
 --dns-address and --dns-ttl parameters, used to specify the dns (--dns-address) used by the proxy to access the domain name.  
 And the analysis result cache time (--dns-ttl) seconds, to avoid system dns interference to the proxy, in addition to the cache function can also reduce the dns resolution time to improve access speed.  
@@ -1303,6 +1318,10 @@ Listen port argument `-p` can be:
   -p ":8081,:8082"  listen on 8081 and 8082
   -p ":8081,:8082,:9000-9999" listen on 8081 and 8082 and 9000 and 9001 to 9999, 1002 total ports  
 ```
+
+notice:
+
+When using the kcp protocol locally, you need to specify the vps public network IP with -g, and the UDP function of socks5 is fully used. At this time, -g is the IP address in the UDP address returned to the client.
 
 ### 6.2 HTTP(S) to HTTP(S)+SOCKS5+SS  
 Suppose there is already a normal http(s) proxy: 127.0.0.1:8080. Now we turn it into a common proxy that supports both http(s) and socks5 and ss. The converted local port is 18080, ss encryption: Aes-192-cfb, ss password: pass.  
@@ -1811,11 +1830,11 @@ Iprate: The single TCP connection rate limit of the user IP, in bytes/second, no
 Upstream: The upstream used, not empty, or not set this header.  
 
 #### Tips  
-1. By default, `--auth-url` is required to provide the user name and password. If you do not need the client to provide the username and password, and authenticate, you can add `--auth-nouser`. The visit will still access the authentication address `--auth-url` for authentication. Only the $user authentication username and the $pass authentication password received in the php interface are empty.  
+1. By default, `--auth-url` is required to provide the user name and password. If you do not need the client to provide the username and password, and authenticate, you can add `--auth-nouser`. The visit will still access the authentication address `--auth-url` for authentication. Only the $user authentication username and the $pass authentication password received in the php interface are empty when client didn't send username and password.  
 2. Connection limit priority: User authentication file rate limit - "File ip.limit rate limit -" API user rate limit - "API IP rate limit -" command line global connection limit.  
 3. Rate Limit Priority: User Authentication File Rate Limit - "File ip.limit Rate Limit -" API User Rate Limit - "API IP Rate Limit - "Command Line Global Rate Limit.  
 3. The upstream obtains the priority: the upstream of the user authentication file - the file ip.limit upstream-"API upstream-" command line specifies the upstream.  
-4.`--auth-cache` authentication cache, cache the authentication result for a certain period of time, improve performance, reduce the pressure on the authentication interface, --auth-cache unit seconds, default 60, set 0 to close the cache.  
+4.`--auth-cache` authentication cache, cache the authentication result for a certain period of time, improve performance, reduce the pressure on the authentication interface, --auth-cache unit seconds, default 0, set 0 to close the cache.  
 
 #### upstream detailed description  
 
@@ -1842,8 +1861,16 @@ Upstream supports socks5, http(s) proxy, support authentication, format: `protoc
 
 ### Traffic report / Traffic limit / Traffic statistics
 
-The proxy http / socks5 / sps / tcp / udp proxy function supports traffic reporting. You can set an http interface address through the parameter --traffic-url
-Then when the connection is released, the proxy will report the traffic used by the connection to this address. The specific situation is that the proxy sends an HTTP to GET request to the HTTP URL address set by --traffic-url.
+The proxy's http (s) / socks5 / sps / tcp / udp proxy function supports traffic reporting. You can set an http interface address through the parameter `--traffic-url`.
+The proxy will report the traffic used for this connection to this address.Specifically, the proxy sends an HTTP to GET request to the HTTP URL address set by `--traffic-url`.
+There are two reporting modes, which can be specified by the `--traffic-mode` parameter. It can be reported in the normal mode or in the fast mode.
+
+1. Report in `normal` normal mode  
+When the connection is released, the proxy will report the traffic used for this connection to this `--traffic-url` address.
+
+2. Report in `fast` mode    
+For each connection that has been established, the proxy will `timely` report the traffic generated by this connection to this` --traffic-url` address.  
+`Timing` defaults to 5 seconds, and you can modify` Timing` to the appropriate number of seconds via the parameter `--traffic-interval`.  
 
 The traffic reporting function combined with the above API authentication function can control the user's traffic usage in real time. The traffic is reported to the interface. The interface writes the traffic data to the database, and then the authentication API queries the database to determine the traffic usage and determine whether the user can be successfully authenticated.
 
@@ -1858,6 +1885,59 @@ client_addr: client address, format: IP: port.
 target_addr: target address, format: "IP: port", when tcp / udp proxy, this is empty.
 User name: proxy authentication user name, this is empty when tcp / udp proxy.
 bytes: the number of traffic bytes used by the user.
+
+###  Disconnect the user's connection
+
+The proxy's http (s) / socks5 / sps proxy function supports a control interface, which can be specified by the parameter --control-url http interface address,
+Then the proxy will interval send all the usernames or client IPs currently connected to the proxy to this URL. Specifically, the proxy sends an HTTP to POST request to the HTTP URL address set by --control-url.
+
+`interval` defaults to 30 seconds, this value can be modified via the --control-sleep parameter.
+
+When the user expires, or the user's traffic has been used up, the authentication API can only control the user cannot create a new connection, but the connection with the proxy has been established and the connection cannot be immediately disconnected.
+Then this problem can be solved through the control interface. The control interface will return the content through the control interface in the slowest `interval` time, and the end is invalid when the user establishes the connection.
+
+#### Request Description
+
+The proxy sends an HTTP POST request to the control interface URL. There are two fields in the form data: user and ip.
+
+user: the user name currently connected to the proxy, multiple are separated by commas, for example: user1, user2
+
+ip: The IP address of the client currently connected to the proxy, multiple are separated by commas, for example: 1.1.1.1, 2.2.2.2
+
+#### Response Data Description
+
+The data returned by the control interface is invalid user and IP, the format is a json object data, there are two fields user and ip.
+
+For example: {"user": "a, b", "ip": ""}
+
+user: the user name currently connected to the proxy, multiple are separated by commas, not left blank, for example: user1, user2
+
+ip: The ip address of the client currently connected to the proxy. Multiple are separated by commas and not left blank.
+
+The connection between the returned user and ip will be disconnected by proxy.
+
+#### Example
+Suppose --control-url `http: //127.0.0.1: 33088 / user / control.php` points to a PHP interface address.
+The content of control.php is as follows:
+
+```php  
+<?php  
+#revcieve proxy post data
+$userArr=explode(",",$_POST['user']);   
+$ipArr=$_GET['ip'];  
+
+//invalid users array
+$badUsers=[]; 
+
+foreach ($userArr as $user) {  
+    //logic business, push invalid user into $badUsers
+    $badUsers[]=$user;
+}  
+$data=["user"=>implode(","$badUsers),"ip"=>""];
+
+echo json_encode($data);
+```  
+
 
 ## 10. Authentication  
 
